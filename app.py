@@ -77,8 +77,8 @@ class app:
                     continue
                 cFoundEl = 1
                 if last == cGamer:
-                    for i in range(2, 5):
-                        last = cGrid[cLen - i]
+                    for ccR in range(2, 5):
+                        last = cGrid[cLen - ccR]
                         if last != cGamer:
                             break
                         cFoundEl += 1
@@ -99,23 +99,22 @@ class app:
                         raise Win(f"Player {cGamer} won - [horizontal]")
 
                 # check diagonal /
-            for i in range(rows - 4):
-                for j in range(columns - 4):
-                    a = self.grid[5][j]
-                    b = self.grid[rows - i - 1][j + 1]
-                    c = self.grid[rows - i - 2][j + 2]
-                    d = self.grid[rows - i - 3][j + 3]
+            for ccR in range(rows - 4):
+                for ccC in range(columns - 4):
+                    a = self.grid[5][ccC]
+                    b = self.grid[rows - ccR - 1][ccC + 1]
+                    c = self.grid[rows - ccR - 2][ccC + 2]
+                    d = self.grid[rows - ccR - 3][ccC + 3]
                     if [a, b, c, d] == 4 * [cGamer]:
                         raise Win(f"Player {cGamer} won - [diagonal /]")
 
             # check diagonal \
-            for i in range(rows - 4):
-                for j in range(columns - 4):
-                    a = self.grid[i][j]
-                    a = self.grid[i][j]
-                    b = self.grid[i + 1][j + 1]
-                    c = self.grid[i + 2][j + 2]
-                    d = self.grid[i + 3][j + 3]
+            for ccR in range(rows - 4):
+                for ccC in range(columns - 4):
+                    a = self.grid[ccR][ccC]
+                    b = self.grid[ccR + 1][ccC + 1]
+                    c = self.grid[ccR + 2][ccC + 2]
+                    d = self.grid[ccR + 3][ccC + 3]
                     if [a, b, c, d] == 4 * [cGamer]:
                         raise Win(f"Player {cGamer} won - [diagonal \]")
             return False
