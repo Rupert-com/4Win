@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import os
+import PySimpleGUI as sg
 
 rows = 6 - 1
 columns = 7
@@ -22,10 +23,11 @@ class colume:
     def isFull(self) -> bool:
         return (len(self.p) - 1) > rows
 
-    def add(self, str) -> None:
+    def add(self, str):
         self.p = np.append(self.p, str)
         if self.isFull():
             raise Exception("Error :(")
+        return [len(self.p), self.col - 1]
 
     def getLast(self):
         cLen = len(self.p)
@@ -45,7 +47,6 @@ class colume:
 
 class app:
     grid: any
-
     cGamer = "X"
 
     def __init__(self) -> None:
@@ -55,16 +56,74 @@ class app:
 
         self.grid = np.array(cGrid)
 
-    def drawGrid(self) -> None:
-        strgrid = ""
-        for x in range(rows, -1, -1):
-            strrow = "\n| "
-            for cColume in self.grid:
-                strrow += cColume[x] + (" | " if cColume != 0 else "")
-            strgrid += strrow
-        print(
-            strgrid + "\n_____________________________\n| 1 | 2 | 3 | 4 | 5 | 6 | 7 |"
+        headings = [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+        ]
+        header = [[sg.Text(h, size=(3, 1), pad=(30, 0)) for h in headings]]
+
+        input_rows = [
+            [
+                sg.Text(
+                    size=(3, 1),
+                    pad=(30, 0),
+                    key=(f"{col}{row}"),
+                    # text=f"{col}{row}",
+                )
+                for col in range(0, len(headings))
+            ]
+            for row in range(rows, 0, -1)
+        ]
+
+        self.Window = sg.Window(
+            "4 Gewinnt GUI",
+            [
+                [
+                    sg.Column(
+                        header
+                        + input_rows
+                        + [
+                            [
+                                sg.Text(
+                                    key="player",
+                                    size=(30, 1),
+                                    justification="center",
+                                ),
+                            ],
+                            [
+                                sg.InputText(key="row"),
+                            ],
+                            [
+                                sg.Button(key="btn", button_text="submit"),
+                            ],
+                        ]
+                    ),
+                ]
+            ],
+            finalize=True,
         )
+        self.Window["row"].bind("<Return>", "_Enter")
+
+    def WindowsDrawCPlayer(self) -> None:
+        self.Window["player"].update(
+            f"Gamer {self.cGamer} please select your colume[1-{len(self.grid)}]"
+        )
+
+    def drawGrid(self) -> None:
+        table = np.array()
+        for cR in range(rows):
+            row = np.array([])
+            for cC in range(columns):
+                cGrid = self.grid[cC]
+                # Not array instead convert to dictonary
+                # https://stackoverflow.com/questions/37949409/dictionary-in-a-numpy-array
+                row = np.append(row, (cGrid[cR]))
+            table = np.append(table, row)
+        self.Window["-TABLE-"].update(values=table[1:][:])
 
     def isWin(self) -> None:
         try:
@@ -123,22 +182,33 @@ class app:
             return True
 
     def loop(self) -> None:
-        os.system("cls")
-        while self.isWin() == False:
+        self.WindowsDrawCPlayer()
+        whiling = True
+
+        while True:
             try:
-                colume = (
-                    int(
-                        input(
-                            f"Game {self.cGamer} please select your colume[1-{len(self.grid)}]: "
-                        )
-                    )
-                    - 1
-                )
-                # cGrid = copy.deepcopy()
-                self.grid[colume].add(self.cGamer)
-                # self.grid[colume] = cGrid
-                self.cGamer = "O" if self.cGamer == "X" else "X"
-                self.drawGrid()
+                event, values = self.Window.read()
+                if event == "Exit" or event == sg.WIN_CLOSED:
+                    break
+                elif event == "btn":
+                    if whiling == True:
+                        [row, col] = self.grid[int(values["row"])].add(self.cGamer)
+                        self.Window[f"{col}{row}"].update(self.cGamer)
+
+                        # self.grid[colume] = cGrid
+                        self.cGamer = "O" if self.cGamer == "X" else "X"
+
+                        if self.isWin():
+                            whiling = False
+                            self.Window["row"].update(f"player {self.cGamer} won")
+                        else:
+                            self.Window["row"].update("")
+
+                        self.WindowsDrawCPlayer()
+                        # self.drawGrid()
+                    else:
+                        # TODO restart :)
+                        pass
             except IndexError as e:
                 print(e)
                 print(f"Bitte nur Zahlen von 0-{columns}")
